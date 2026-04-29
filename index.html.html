@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Distribuidora de Frutas Traviú</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; padding-bottom: 40px; }
+
+    header { background: #1a3a5c; color: #fff; padding: 18px 24px; display: flex; align-items: center; gap: 12px; }
+    header h1 { font-size: 18px; font-weight: 700; }
+    header p { font-size: 12px; opacity: 0.7; }
+
+    .body { max-width: 680px; margin: 0 auto; padding: 24px 16px; }
+
+    .card { background: #fff; border-radius: 10px; border: 1px solid #d1dbe8; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .section-title { font-size: 14px; font-weight: 700; color: #1a3a5c; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+    .upload-zone { border: 2px dashed #d1dbe8; border-radius: 8px; padding: 32px 16px; text-align: center; background: #f0f4f8; cursor: pointer; transition: all 0.2s; }
+    .upload-zone.drag { border-color: #2563eb; background: #eff6ff; }
+    .upload-zone p { color: #64748b; font-size: 14px; margin: 8px 0 0; }
+    .upload-zone .icon { font-size: 32px; }
+    .upload-btn { margin-top: 12px; background: #2563eb; color: #fff; border: none; border-radius: 6px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-ghost { background: #f0f4f8; color: #1e293b; border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+    .badge { background: #d1dbe8; color: #fff; border-radius: 12px; padding: 1px 8px; font-size: 12px; font-weight: 700; }
+    .badge.active { background: #2563eb; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .img-card { border-radius: 8px; overflow: hidden; border: 2px solid #d1dbe8; cursor: pointer; position: relative; background: #f0f4f8; transition: border 0.15s; }
+    .img-card.selected { border-color: #2563eb; }
+    .img-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+    .img-check { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.85); border: 2px solid #d1dbe8; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 700; }
+    .img-card.selected .img-check { background: #2563eb; border-color: #2563eb; }
+    .img-del { position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%; background: rgba(220,38,38,0.85); border: none; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .img-name { font-size: 11px; color: #64748b; padding: 4px 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+    .empty { color: #64748b; font-size: 13px; text-align: center; padding: 20px 0; }
+
+    label.field-label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; display: block; }
+    input[type=text], textarea { width: 100%; border: 1px solid #d1dbe8; border-radius: 6px; padding: 9px 12px; font-size: 13px; outline: none; margin-bottom: 10px; font-family: inherit; }
+    textarea { min-height: 72px; resize: vertical; }
+
+    .divider { border-top: 1px solid #d1dbe8; margin: 16px 0; }
+
+    .btn-wa { width: 100%; background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .btn-wa:hover { background: #15803d; }
+
+    .preview { background: #f0f4f8; border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .preview-title { font-size: 13px; font-weight: 700; color: #1a3a5c; margin-bottom: 12px; }
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+    .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; border: 1px solid #d1dbe8; }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #16a34a; color: #fff; padding: 10px 24px; border-radius: 24px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 999; display: none; }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:22px">🍊</span>
+  <div>
+    <h1>Distribuidora de Frutas Traviú</h1>
+    <p>Selecione os comprovantes e envie via WhatsApp</p>
+  </div>
+</header>
+
+<div class="body">
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="section-title">📁 Upload de Comprovantes</div>
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">🖼️</div>
+      <p>Arraste imagens aqui ou clique para selecionar</p>
+      <button class="upload-btn" onclick="document.getElementById('fileInput').click()">Escolher arquivos</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none" />
+  </div>
+
+  <!-- Galeria -->
+  <div class="card">
+    <div class="bar">
+      <div class="section-title" style="margin-bottom:0">
+        🖼️ Imagens &nbsp;<span class="badge active" id="totalBadge">0</span>
+      </div>
+      <div class="btn-group">
+        <button class="btn-ghost" onclick="selectAll()">Selecionar tudo</button>
+        <button class="btn-ghost" onclick="clearSel()">Limpar</button>
+      </div>
+    </div>
+    <div id="gallery"><p class="empty">Nenhuma imagem adicionada ainda.</p></div>
+  </div>
+
+  <!-- WhatsApp -->
+  <div class="card">
+    <div class="section-title">
+      💬 Enviar via WhatsApp &nbsp;<span class="badge active" id="selBadge">0 selecionada(s)</span>
+    </div>
+
+    <label class="field-label">Número do cliente (opcional)</label>
+    <input type="text" id="phone" placeholder="Ex: 21999998888" />
+
+    <label class="field-label">Mensagem</label>
+    <textarea id="msg">Olá! Segue o relatório com os comprovantes.</textarea>
+
+    <div id="preview"></div>
+
+    <div class="divider"></div>
+    <button class="btn-wa" onclick="sendWhatsApp()">📲 Abrir WhatsApp e Enviar</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let images = [];
+  let selected = new Set();
+
+  const fileInput = document.getElementById('fileInput');
+  const uploadZone = document.getElementById('uploadZone');
+
+  fileInput.addEventListener('change', e => addFiles(e.target.files));
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag'); addFiles(e.dataTransfer.files); });
+
+  function addFiles(files) {
+    Array.from(files).filter(f => f.type.startsWith('image/')).forEach(f => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        images.push({ id: Date.now() + Math.random(), name: f.name, src: e.target.result });
+        render();
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+
+  function toggle(id) {
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    render();
+  }
+
+  function remove(id) {
+    images = images.filter(i => i.id !== id);
+    selected.delete(id);
+    render();
+  }
+
+  function selectAll() { images.forEach(i => selected.add(i.id)); render(); }
+  function clearSel() { selected.clear(); render(); }
+
+  function render() {
+    const gallery = document.getElementById('gallery');
+    document.getElementById('totalBadge').textContent = images.length;
+    const selCount = selected.size;
+    document.getElementById('selBadge').textContent = selCount + ' selecionada' + (selCount !== 1 ? 's' : '');
+
+    if (!images.length) {
+      gallery.innerHTML = '<p class="empty">Nenhuma imagem adicionada ainda.</p>';
+    } else {
+      gallery.innerHTML = '<div class="grid">' + images.map(img => `
+        <div class="img-card ${selected.has(img.id) ? 'selected' : ''}" onclick="toggle(${img.id})">
+          <img src="${img.src}" alt="${img.name}" />
+          <div class="img-check">${selected.has(img.id) ? '✓' : ''}</div>
+          <button class="img-del" onclick="event.stopPropagation(); remove(${img.id})">×</button>
+          <div class="img-name">${img.name}</div>
+        </div>`).join('') + '</div>';
+    }
+
+    const selImgs = images.filter(i => selected.has(i.id));
+    const preview = document.getElementById('preview');
+    if (selImgs.length) {
+      preview.innerHTML = `<div class="preview"><div class="preview-title">📎 ${selImgs.length} comprovante(s) no relatório:</div><div class="preview-grid">${selImgs.map(i => `<img src="${i.src}" />`).join('')}</div></div>`;
+    } else {
+      preview.innerHTML = '';
+    }
+  }
+
+  function sendWhatsApp() {
+    const sel = images.filter(i => selected.has(i.id));
+    if (!sel.length) { showToast('⚠️ Selecione ao menos uma imagem!'); return; }
+    const num = document.getElementById('phone').value.replace(/\D/g, '');
+    const msg = document.getElementById('msg').value;
+    const text = encodeURIComponent(msg + `\n\n📎 ${sel.length} comprovante(s) selecionado(s).\n\nPor favor, confirme o recebimento.`);
+    const url = num ? `https://wa.me/55${num}?text=${text}` : `https://wa.me/?text=${text}`;
+    window.open(url, '_blank');
+    showToast('✅ WhatsApp aberto!');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
